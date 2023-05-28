@@ -1,137 +1,136 @@
+// Assignment-3
+// Surya Dev Singh Chauhan
+//3455
+
 #include <bits/stdc++.h>
-#include <omp.h>
-#include <chrono>
+#include <vector>
+#include <chrono>  // for measuring time
 
 using namespace std;
-using namespace std::chrono;
+using namespace chrono;
 
-// Sequential and parallel maximum finding
-
-void sequential_max(vector<int> &arr, int N){
-    int max_val = arr[0]; // Initialize the maximum value with the first element
-    for(int i = 1; i < N; i++){
-        max_val = max(max_val, arr[i]); // Update the maximum value if a larger value is found
+// Find the minimum value in the vector
+int min_reduction(const vector<int>& arr) {
+    int min_value = INT_MAX;
+    // Use OpenMP to perform reduction
+    #pragma omp parallel for reduction(min: min_value)
+    for (size_t i = 0; i < arr.size(); i++) {
+        if (arr[i] < min_value) {
+            min_value = arr[i];
+        }
     }
-    cout << "\n\n Sequential Max : " << max_val << endl; // Print the maximum value
+    return min_value;
 }
 
-void parallel_max(vector<int> &arr, int N){
-    int max_val = arr[0]; // Initialize the maximum value with the first element
-    #pragma omp parallel for reduction(max:max_val)
-    for(int i = 1; i < N; i++){
-        max_val = max(max_val, arr[i]); // Update the maximum value if a larger value is found
+// Find the maximum value in the vector
+int max_reduction(const vector<int>& arr) {
+    int max_value = INT_MIN;
+    // Use OpenMP to perform reduction
+    #pragma omp parallel for reduction(max: max_value)
+    for (size_t i = 0; i < arr.size(); i++) {
+        if (arr[i] > max_value) {
+            max_value = arr[i];
+        }
     }
-    cout << "\n\n Parallel Max : " << max_val << endl; // Print the maximum value
+    return max_value;
 }
 
-
-// --------------------------------------------------------------------
-
-// Sequential and parallel minimum finding
-
-void sequential_min(vector<int> &arr, int N){
-    int min_val = arr[0]; // Initialize the minimum value with the first element
-    for(int i = 1; i < N; i++){
-        min_val = min(min_val, arr[i]); // Update the minimum value if a smaller value is found
+// Calculate the sum of all elements in the vector
+int sum_reduction(const vector<int>& arr) {
+    int sum = 0;
+    // Use OpenMP to perform reduction
+    #pragma omp parallel for reduction(+: sum)
+    for (size_t i = 0; i < arr.size(); i++) {
+        sum += arr[i];
     }
-
-    cout << "\n\n Sequential Min : " << min_val << endl; // Print the minimum value
+    return sum;
 }
 
-void parallel_min(vector<int> &arr, int N){
-    int min_val = arr[0]; // Initialize the minimum value with the first element
-
-    #pragma omp parallel for reduction(min:min_val)
-    for(int i = 1; i < N; i++){
-        min_val = min(min_val, arr[i]); // Update the minimum value if a smaller value is found
+// Calculate the average value of all elements in the vector
+double average_reduction(const vector<int>& arr) {
+    int sum = 0;
+    // Use OpenMP to perform reduction
+    #pragma omp parallel for reduction(+: sum)
+    for (size_t i = 0; i < arr.size(); i++) {
+        sum += arr[i];
     }
-
-    cout << "\n\n Parallel Min : " << min_val << endl; // Print the minimum value
+    return (double)sum / arr.size();
 }
 
-
-// ---------------------------------------------------------------------------
-
-// Sequential and parallel average calculation
-
-void sequential_average(vector<int> &arr, int N){
-    double average = arr[0]; // Initialize the average with the first element
-    for(int i = 1; i < N; i++){
-        average += arr[i]; // Add each element to the sum
+int min_non_parallel(const vector<int>& arr) {
+    int min_value = INT_MAX;
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] < min_value) {
+            min_value = arr[i];
+        }
     }
-
-    average /= N; // Divide the sum by the number of elements to calculate the average
-
-    cout << "\n\n Sequential Average : " << average << endl; // Print the average
+    return min_value;
 }
 
-void parallel_average(vector<int> &arr, int N){
-    double average = arr[0]; // Initialize the average with the first element
-
-    #pragma omp parallel for reduction(+: average)
-    for(int i = 1; i < N; i++){
-        average += arr[i]; // Add each element to the sum
+int max_non_parallel(const vector<int>& arr) {
+    int max_value = INT_MIN;
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr[i] > max_value) {
+            max_value = arr[i];
+        }
     }
-
-    average /= N; // Divide the sum by the number of elements to calculate the average
-
-    cout << "\n\nParallel Average : " << average << endl; // Print the average
+    return max_value;
 }
 
+int sum_non_parallel(const vector<int>& arr) {
+    int sum = 0;
+    for (int i = 0; i < arr.size(); i++) {
+        sum += arr[i];
+    }
+    return sum;
+}
 
-int main(){
+double average_non_parallel(const vector<int>& arr) {
+    int sum = sum_non_parallel(arr);
+    return static_cast<double>(sum) / arr.size();
+}
 
-	srand(time(0));
-	
-	int N = rand()%1000 + 10;
-	vector<int> arr(N);
-	for(int i = 0; i < N; i++){
-		arr[i] = rand()%1000;
-		cout << arr[i] << " ";
-	}
-	cout << endl;
+int main() {
+    vector<int> arr;
 
-	// Max
+    int range = 100000;
 
-	auto start = high_resolution_clock::now();
-	sequential_max(arr, N);
-	auto stop = high_resolution_clock::now();	
-	auto duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
+    for(int i = 0; i < range; i++){
+        arr.push_back(1+rand());
+    }
 
-	start = high_resolution_clock::now();
-	parallel_max(arr, N);
-	stop = high_resolution_clock::now();	
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
+    // Parallel reduction functions
+    auto start = high_resolution_clock::now();
+    int min_parallel = min_reduction(arr);
+    int max_parallel = max_reduction(arr);
+    int sum_parallel = sum_reduction(arr);
+    double average_parallel = average_reduction(arr);
+    auto end = high_resolution_clock::now();
+    auto duration_parallel = duration_cast<microseconds>(end - start);
 
-	// Min
+    // Non-parallel functions
+    start = high_resolution_clock::now();
+    int min_non_parallel_result = min_non_parallel(arr);
+    int max_non_parallel_result = max_non_parallel(arr);
+    int sum_non_parallel_result = sum_non_parallel(arr);
+    double average_non_parallel_result = average_non_parallel(arr);
+    end = high_resolution_clock::now();
+    auto duration_non_parallel = duration_cast<microseconds>(end - start);
 
-	parallel_min(arr, N);
-	stop = high_resolution_clock::now();	
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
+    // Print the results
+    cout << "Parallel Reduction Functions:" << endl;
+    cout << "Minimum value: " << min_parallel << endl;
+    cout << "Maximum value: " << max_parallel << endl;
+    cout << "Sum: " << sum_parallel << endl;
+    cout << "Average: " << average_parallel << endl;
+    cout << "Time taken: " << duration_parallel.count() << " microseconds" << endl;
 
-	sequential_min(arr, N);
-	stop = high_resolution_clock::now();	
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
+    cout << "\nSequential Functions:" << endl;
+    cout << "Minimum value: " << min_non_parallel_result << endl;
+    cout << "Maximum value: " << max_non_parallel_result << endl;
+    cout << "Sum: " << sum_non_parallel_result << endl;
+    cout << "Average: " << average_non_parallel_result << endl;
+    cout << "Time taken: " << duration_non_parallel.count() << " microseconds" << endl;
 
-
-
-	// Average
-
-
-	start = high_resolution_clock::now();
-	sequential_average(arr, N);
-	stop = high_resolution_clock::now();	
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
-
-	start = high_resolution_clock::now();
-	parallel_average(arr, N);
-	stop = high_resolution_clock::now();	
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Time : " << duration.count() << " Seconds "<< endl;
-  
+    return 0;
 }
