@@ -1,57 +1,115 @@
-#include<iostream>
-#include<vector>
-#include<bits/stdc++.h>
-#include<omp.h>
+#include <bits/stdc++.h>
+#include <omp.h>
+#include<chrono>
 using namespace std;
-double regression_l(const vector<double>& x, const vector<double> y){
-  double x_m = 0, y_m = 0;
-  int coun = x.size();
-  
-  #pragma omp parallel for reduction(+: x_m, y_m)
-  for(int i = 0; i< coun;i++){
-   x_m += x[i];
-   y_m += y[i];
-  }
-  
-  x_m /= coun;
-  y_m /= coun;
-  
-  double num = 0, deno = 0;
-  #pragma omp parallel for reduction(+: num, deno)
-  for(int i = 0; i < coun; i++){
-     num += (x[i] - x_m) * (y[i] - y_m);
-     deno += (x[i] - x_m) * (x[i] - x_m);
-     cout<<"num"<<num<<"\n";
-     cout<<"deno"<<deno<<"\n";
-  }
-  
-  return num/deno;
-  
+using namespace std::chrono;
+
+
+//Declaring the size of the input vectors
+int N;
+
+//Parallel linear regression function
+double linear_regression_parallel(const double x[], const double y[]) {
+double x_mean = 0, y_mean= 0;
+
+//Parallel for loop
+#pragma omp parallel for reduction(+: x_mean, y_mean)
+for(int i = 0; i < N; i++) {
+x_mean += x[i];
+y_mean += y[i]; 
+}
+double n = N;
+
+//Calulating mean of x and y
+x_mean /= n;
+y_mean /= n;
+
+//Declaring numerator and denominator for slope calculations
+double num = 0, den = 0;
+
+//Implementing parallel for loop
+#pragma omp parallel for reduction(+: num, den)
+for( int i = 0; i < N; i++) {
+num += (x[i] - x_mean) * (y[i] - y_mean);
+den += (x[i] - x_mean) * (x[i] - x_mean);
 }
 
+return num / den;
+}
+
+
+//Sequential linear regression function
+double linear_regression_original(const double x[], const double y[]) {
+double x_mean = 0, y_mean= 0;
+
+for(int i = 0; i < N; i++) {
+x_mean += x[i];
+y_mean += y[i]; 
+}
+double n = N;
+x_mean /= n;
+y_mean /= n;
+
+double num = 0, den = 0;
+for( int i = 0; i < N; i++) {
+num += (x[i] - x_mean) * (y[i] - y_mean);
+den += (x[i] - x_mean) * (x[i] - x_mean);
+}
+
+return num / den;
+}
+
+/* Input
+15
+1 2 
+2 5
+3 6
+4 9
+5 11
+6 15
+7 20
+8 24
+9 26
+15 34
+17 37
+91 193
+88 189
+122 270
+111 240
+
+*/
 int main() {
-  double start, end;
-  vector<double> x;
-  vector<double> y;
-  cout<<"enter the number of x cor, and y cor\n";
-  int n;
-  cin>>n;
-  cout<<"enter the x cor\n"; 
-  for(int i = 0; i < n; i++){
-   double temp;
-   cin>>temp;
-   x.push_back(temp);
-  }
-  
-  cout<<"enter the y cor\n"; 
-  for(int i = 0; i < n; i++){
-   double temp;
-   cin>>temp;
-   y.push_back(temp);
-  }
-  start = omp_get_wtime();
-  double result = regression_l(x,y);
-  end = omp_get_wtime();
-  cout<<"\n Time taken = "<<end-start<<" seconds.\n";
-  cout<< "The Regression line will have slope"<<result;
+
+//Taking inpur from the user
+cout<<"Enter total number of elemebnts in dataset: "; 
+cin>>N;
+double x[N], y[N];
+cout << "Enter co-ordinates(x, y) of " << N <<" points." <<endl;
+
+for(int i = 0 ; i < N; i ++) {
+    x[i]=rand()%100;
+    y[i]=rand()%100;
+}
+
+//Calling sequential linear function 
+cout<<"\nUsing sequential computing---\n ";
+cout << "Linear Regression line has slope : ";
+auto start = high_resolution_clock::now();
+double result = linear_regression_original(x, y); 
+auto end = high_resolution_clock::now();
+cout << result << endl;
+auto dur = duration_cast<microseconds>(end - start);
+cout << "Time taken : " <<dur.count() << " ms" <<endl;
+
+//Calling parallel linearfunction
+cout << "\n Using parallel computing---\n ";
+cout << "Linear Regression line has slope : ";
+start = high_resolution_clock::now();
+result = linear_regression_parallel(x, y);
+end = high_resolution_clock::now();
+cout << result << endl;
+dur = duration_cast<microseconds>(end - start);
+cout << "Time taken : " <<dur.count() << " ms" <<endl;
+
+return 0;
 }
