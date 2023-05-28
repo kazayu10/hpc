@@ -1,0 +1,57 @@
+#include<iostream>
+#include<vector>
+#include<bits/stdc++.h>
+#include<omp.h>
+using namespace std;
+double regression_l(const vector<double>& x, const vector<double> y){
+  double x_m = 0, y_m = 0;
+  int coun = x.size();
+  
+  #pragma omp parallel for reduction(+: x_m, y_m)
+  for(int i = 0; i< coun;i++){
+   x_m += x[i];
+   y_m += y[i];
+  }
+  
+  x_m /= coun;
+  y_m /= coun;
+  
+  double num = 0, deno = 0;
+  #pragma omp parallel for reduction(+: num, deno)
+  for(int i = 0; i < coun; i++){
+     num += (x[i] - x_m) * (y[i] - y_m);
+     deno += (x[i] - x_m) * (x[i] - x_m);
+     cout<<"num"<<num<<"\n";
+     cout<<"deno"<<deno<<"\n";
+  }
+  
+  return num/deno;
+  
+}
+
+int main() {
+  double start, end;
+  vector<double> x;
+  vector<double> y;
+  cout<<"enter the number of x cor, and y cor\n";
+  int n;
+  cin>>n;
+  cout<<"enter the x cor\n"; 
+  for(int i = 0; i < n; i++){
+   double temp;
+   cin>>temp;
+   x.push_back(temp);
+  }
+  
+  cout<<"enter the y cor\n"; 
+  for(int i = 0; i < n; i++){
+   double temp;
+   cin>>temp;
+   y.push_back(temp);
+  }
+  start = omp_get_wtime();
+  double result = regression_l(x,y);
+  end = omp_get_wtime();
+  cout<<"\n Time taken = "<<end-start<<" seconds.\n";
+  cout<< "The Regression line will have slope"<<result;
+}
