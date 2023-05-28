@@ -106,9 +106,10 @@ int main(){
     srand(time(0)); // Seed the random number generator with current time
     auto start = high_resolution_clock::now(); // Start the timer
     auto stop = high_resolution_clock::now(); // Stop the timer
-    auto duration = duration_cast<nanoseconds>(stop - start); // Calculate the duration
+    auto duration = duration_cast<microseconds>(stop - start); // Calculate the duration
 
-    int N = rand() % 10 + 1; // Generate a random size for the array (between 1 and 10)
+    int N ; 
+    cin>>N;
     vector<int> arr(N); // Create a vector to store the random array
     cout << "Original Array: ";
     for(int i = 0; i < N; i++){
@@ -132,8 +133,8 @@ int main(){
 	}
 	cout << endl;
 	stop = high_resolution_clock::now();
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Serial Time : " << duration.count() << endl;
+	duration = duration_cast<microseconds>(stop-start);
+	cout << "Serial Time : " << duration.count() <<" microseconds"<< endl;
 
 	// P a r a l l e l       M e r g e 	
 
@@ -146,8 +147,8 @@ int main(){
 	}
 	cout << endl;
 	stop = high_resolution_clock::now();
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Parallel Time : " << duration.count() << endl;
+	duration = duration_cast<microseconds>(stop-start);
+	cout << "Parallel Time : " << duration.count()<<" microseconds" << endl;
 
 
 	// ------------------------------------------------------------
@@ -170,8 +171,8 @@ int main(){
 	cout << endl;
 
 	stop = high_resolution_clock::now();
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Serial Time : " << duration.count() << endl;
+	duration = duration_cast<microseconds>(stop-start);
+	cout << "Serial Time : " << duration.count()<<" microseconds" << endl;
 
 	// P a r a l l e l       B u b b l e 	
 
@@ -185,8 +186,8 @@ int main(){
 		cout << arr[i] << " ";
 	cout << endl;
 
-	duration = duration_cast<nanoseconds>(stop-start);
-	cout << "Parallel Time : " << duration.count() << endl;
+	duration = duration_cast<microseconds>(stop-start);
+	cout << "Parallel Time : " << duration.count()<<" microseconds" << endl;
 	
 	return 0;
 }
